@@ -47,6 +47,8 @@ def fetch_from_garmin():
         spo2_data = garmin.get_spo2_data(day)
         resp_data = garmin.get_respiration_data(day)
         stress_data = garmin.get_all_day_stress(day)
+        training_readiness_data = garmin.get_training_readiness(day)
+        training_status_data = garmin.get_training_status(day)
 
         last_two_years.append(
             dict(
@@ -56,6 +58,8 @@ def fetch_from_garmin():
                 spo2=spo2_data,
                 resp=resp_data,
                 stress=stress_data,
+                training_readiness=training_readiness_data,
+                training_status=training_status_data,
             )
         )
 
@@ -63,7 +67,17 @@ def fetch_from_garmin():
 
     with open(hrv_file, "w") as f:
         writer = DictWriter(
-            f, fieldnames=["day", "hrv", "sleep", "spo2", "resp", "stress"]
+            f,
+            fieldnames=[
+                "day",
+                "hrv",
+                "sleep",
+                "spo2",
+                "resp",
+                "stress",
+                "training_readiness",
+                "training_status",
+            ],
         )
         writer.writeheader()
         writer.writerows(last_two_years)
@@ -78,7 +92,7 @@ def raw_to_json(bad_json: str) -> str:
     )
 
 
-def process_and_export_stats():
+def analyze_hrv():
     csv.field_size_limit(sys.maxsize)
 
     with open(hrv_file, "r") as f:
@@ -87,13 +101,15 @@ def process_and_export_stats():
         to_write = []
 
         for row in reader:
-            day, hrv, sleep, spo2, resp, stress = (
+            day, hrv, sleep, spo2, resp, stress, training_readiness, training_status = (
                 row["day"],
                 row["hrv"],
                 row["sleep"],
                 row["spo2"],
                 row["resp"],
                 row["stress"],
+                row["training_readiness"],
+                row["training_status"],
             )
             spreadsheet_data = dict(Day=day)
 
@@ -145,7 +161,7 @@ def process_and_export_stats():
                         -1
                     ]["value"]
 
-                # spreadsheet_data["Sleep Heart Rate"] = sleep_data.get("sleepHeartRate")
+                spreadsheet_data["Sleep Heart Rate"] = sleep_data.get("sleepHeartRate")
 
             if spo2:
                 spo2_data = raw_to_json(spo2)
@@ -166,7 +182,7 @@ def process_and_export_stats():
 
             to_write.append(spreadsheet_data)
 
-    with open("sleep_data_for_analysis.csv", "w") as f:
+    with open("hrv_data_for_analysis.csv", "w") as f:
         output = csv.DictWriter(
             f,
             fieldnames=[
@@ -188,12 +204,11 @@ def process_and_export_stats():
                 "Max Stress Level",
             ],
         )
-        output.writeheader()
 
         for row in to_write:
             print(row)
             output.writerow(row)
 
 
-# fetch_from_garmin()
-process_and_export_stats()
+fetch_from_garmin()
+# analyze_hrv()
