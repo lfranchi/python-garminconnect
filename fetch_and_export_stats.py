@@ -161,7 +161,6 @@ def analyze_hrv():
                         -1
                     ]["value"]
 
-                spreadsheet_data["Sleep Heart Rate"] = sleep_data.get("sleepHeartRate")
 
             if spo2:
                 spo2_data = raw_to_json(spo2)
@@ -179,6 +178,13 @@ def analyze_hrv():
                     "avgStressLevel"
                 )
                 spreadsheet_data["Max Stress Level"] = stress_data.get("maxStressLevel")
+
+            if training_readiness:
+                training_readiness_data = raw_to_json(training_readiness)
+                if len(training_readiness_data) > 0:
+                    spreadsheet_data["Training Readiness"] = training_readiness_data[0][
+                        "score"
+                    ]
 
             to_write.append(spreadsheet_data)
 
@@ -202,13 +208,16 @@ def analyze_hrv():
                 "Average Respiration Value (Sleep)",
                 "Average Stress Level",
                 "Max Stress Level",
+                "Training Readiness"
             ],
         )
+
+        output.writeheader()
 
         for row in to_write:
             print(row)
             output.writerow(row)
 
 
-fetch_from_garmin()
-# analyze_hrv()
+# fetch_from_garmin()
+analyze_hrv()
