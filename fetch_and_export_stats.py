@@ -78,7 +78,7 @@ def raw_to_json(bad_json: str) -> str:
     )
 
 
-def analyze_hrv():
+def process_and_export_stats():
     csv.field_size_limit(sys.maxsize)
 
     with open(hrv_file, "r") as f:
@@ -145,7 +145,7 @@ def analyze_hrv():
                         -1
                     ]["value"]
 
-                spreadsheet_data["Sleep Heart Rate"] = sleep_data.get("sleepHeartRate")
+                # spreadsheet_data["Sleep Heart Rate"] = sleep_data.get("sleepHeartRate")
 
             if spo2:
                 spo2_data = raw_to_json(spo2)
@@ -166,7 +166,7 @@ def analyze_hrv():
 
             to_write.append(spreadsheet_data)
 
-    with open("hrv_data_for_analysis.csv", "w") as f:
+    with open("sleep_data_for_analysis.csv", "w") as f:
         output = csv.DictWriter(
             f,
             fieldnames=[
@@ -188,6 +188,7 @@ def analyze_hrv():
                 "Max Stress Level",
             ],
         )
+        output.writeheader()
 
         for row in to_write:
             print(row)
@@ -195,4 +196,4 @@ def analyze_hrv():
 
 
 # fetch_from_garmin()
-analyze_hrv()
+process_and_export_stats()
