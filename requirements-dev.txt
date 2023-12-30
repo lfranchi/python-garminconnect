@@ -3,3 +3,4 @@ withings-sync>=4.1.0
 readchar
 requests
 mypy
+black
